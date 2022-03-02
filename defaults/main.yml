@@ -3,6 +3,7 @@
 openldap_packages:
   - cyrus-sasl--ldap
   - openldap-server--aci-gssapi
+  - schema2ldif
 
 openldap_user: '_openldap'
 openldap_group: '_openldap'
@@ -68,7 +69,7 @@ openldap_frontend_extra_overlays: []
 
 openldap_data_base_overlays:
   - overlay_unique.ldif.j2
-  - overlay_memberof.ldif.j2
+  - overlay_dynlist.ldif.j2
   - overlay_refint.ldif.j2
 
 openldap_data_extra_overlays: []
