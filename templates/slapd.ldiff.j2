@@ -55,7 +55,7 @@ olcAccess: to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=a
 {% if openldap_trusted_readers is defined %}
 olcAccess: to * by {{ openldap_trusted_readers }} read by * break
 {% endif %}
-olcRootDN: cn=admin,cn=config
+olcRootDN: cn=admin,{{ openldap_base }}
 
 
 dn: olcDatabase={1}mdb,cn=config
@@ -73,15 +73,14 @@ olcAccess: to attrs=userPassword by self =xw by anonymous auth by * none
 olcAccess: to * by {{ openldap_readers }} read by * break
 {% endif %}
 olcRootDN: cn=admin,{{ openldap_base }}
-olcDbIndex: uid eq
 olcDbIndex: mail eq
-olcDbIndex: memberOf eq
+olcDbIndex: mailUID eq,pres
+olcDbIndex: mailGID eq,pres
+olcDbIndex: aliasAddress eq,sub,pres
+olcDbIndex: domainName eq,sub,pres
 olcDbIndex: entryCSN eq
 olcDbIndex: entryUUID eq
 olcDbIndex: objectClass eq
-olcDbIndex: associatedDomain pres,eq,sub
-olcDbIndex: aAAARecord pres,eq
-olcDbIndex: aRecord pres,eq
 
 {% for overlay in openldap_data_overlays %}
 

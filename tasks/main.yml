@@ -51,7 +51,7 @@
     owner: '{{ openldap_user }}'
     group: '{{ openldap_group }}'
     mode: '0644'
-  with_items: '{{ openldap_extra_ldifs }}'
+  with_items: '{{ openldap_ldifs_extra }}'
   notify:
     - stop slapd server
     - remove current slapd.d config

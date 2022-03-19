@@ -1,7 +1,7 @@
-openldap_ldifs: '{{ openldap_base_ldifs + openldap_extra_ldifs }}'
+openldap_ldifs: '{{ openldap_ldifs_default + openldap_ldifs_extra }}'
 
-openldap_schemas: '{{ openldap_base_schemas + openldap_extra_schemas }}'
+openldap_schemas: '{{ openldap_schemas_default + openldap_schemas_extra }}'
 
-openldap_frontend_overlays: '{{ openldap_frontend_base_overlays + openldap_frontend_extra_overlays }}'
+openldap_frontend_overlays: '{{ openldap_frontend_overlays_default + openldap_frontend_overlays_extra }}'
 
-openldap_data_overlays: '{{ openldap_data_base_overlays + openldap_data_extra_overlays }}'
+openldap_data_overlays: '{{ openldap_data_overlays_default + openldap_data_overlays_extra }}'
