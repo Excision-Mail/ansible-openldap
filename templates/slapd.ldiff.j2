@@ -37,10 +37,8 @@ dn: olcDatabase={-1}frontend,cn=config
 objectClass: olcDatabaseConfig
 objectClass: olcFrontendConfig
 olcDatabase: {-1}frontend
+olcRootDN: cn=admin,{{ openldap_base }}
 olcAccess: to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break
-{% if openldap_trusted_readers is defined %}
-olcAccess: to * by {{ openldap_trusted_readers }} read by * break
-{% endif %}
 
 {% for overlay in openldap_frontend_overlays %}
 
@@ -51,11 +49,8 @@ olcAccess: to * by {{ openldap_trusted_readers }} read by * break
 dn: olcDatabase={0}config,cn=config
 objectClass: olcDatabaseConfig
 olcDatabase: {0}config
-olcAccess: to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break
-{% if openldap_trusted_readers is defined %}
-olcAccess: to * by {{ openldap_trusted_readers }} read by * break
-{% endif %}
 olcRootDN: cn=admin,{{ openldap_base }}
+olcAccess: to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage
 
 
 dn: olcDatabase={1}mdb,cn=config
@@ -64,15 +59,19 @@ objectClass: olcMdbConfig
 olcDatabase: {1}mdb
 olcDbDirectory: /var/openldap/data
 olcSuffix: {{ openldap_base }}
-olcAccess: to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break
-{% if openldap_trusted_readers is defined %}
-olcAccess: to * by {{ openldap_trusted_readers }} read by * break
-{% endif %}
-olcAccess: to attrs=userPassword by self =xw by anonymous auth by * none
-{% if openldap_readers is defined %}
-olcAccess: to * by {{ openldap_readers }} read by * break
-{% endif %}
 olcRootDN: cn=admin,{{ openldap_base }}
+{% if openldap_password_hash is defined %}olcRootPW: {{ openldap_password_hash }}{{% endif %}
+olcAccess: to attrs=userPassword
+           by anonymous auth
+           by self =xw
+           by users auth
+olcAccess: to attrs=cn,gn,sn,givenName,telephoneNumber by anonymous auth by self write by users read
+olcAccess: to attrs=backupAddress,blockList,allowList by anonymous auth by self write by users auth
+olcAccess: to attrs=objectClass,entry by anonymous auth by users read
+olcAccess: to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage
+{% if openldap_trusted_readers is defined %}
+olcAccess: to * by {{ openldap_trusted_readers }} read
+{% endif %}
 olcDbIndex: mail eq
 olcDbIndex: mailUID eq,pres
 olcDbIndex: mailGID eq,pres
