@@ -42,5 +42,5 @@
   notify: execute post create scripts
 
 - name: execute post create scripts
-  command: ldapmodify -Y EXTERNAL -Q -H 'ldapi://%2ftmp%2fslapd.sock' -f '{{ item.path }}'
+  command: ldapmodify -Y EXTERNAL -Q -H 'ldapi://' -f '{{ item.path }}'
   with_items: '{{ _openldap_post_scripts.files }}'

@@ -3,8 +3,8 @@ objectClass: olcGlobal
 cn: config
 olcArgsFile: /var/openldap/run/slapd.args
 olcPidFile: /var/openldap/run/slapd.pid
-olcPasswordHash: {CRYPT}
 olcPasswordCryptSaltFormat: $2b${{ openldap_bcrypt_rounds|default(12) }}$%.22s
+olcAuthzRegexp: gidNumber=0\+uidNumber=0,cn=peercred,cn=external,cn=auth cn=admin,{{ openldap_base }}
 olcLocalSSF: 128
 {% if openldap_server_id is defined %}
 olcServerID: {{ openldap_server_id }}
@@ -33,12 +33,21 @@ include: file:///etc/openldap/schema2ldif/{{ schema | basename | regex_replace('
 {% endfor %}
 
 
+dn: cn=module{0},cn=config
+objectClass: olcModuleList
+cn: module{0}
+{% for module in openldap_modules %}
+olcModuleLoad: {{ module }}
+{% endfor %}
+
+
 dn: olcDatabase={-1}frontend,cn=config
 objectClass: olcDatabaseConfig
 objectClass: olcFrontendConfig
 olcDatabase: {-1}frontend
+olcPasswordHash: {CRYPT}
 olcRootDN: cn=admin,{{ openldap_base }}
-olcAccess: to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break
+olcAccess: to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage
 
 {% for overlay in openldap_frontend_overlays %}
 
@@ -52,7 +61,6 @@ olcDatabase: {0}config
 olcRootDN: cn=admin,{{ openldap_base }}
 olcAccess: to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage
 
-
 dn: olcDatabase={1}mdb,cn=config
 objectClass: olcDatabaseConfig
 objectClass: olcMdbConfig
@@ -60,26 +68,18 @@ olcDatabase: {1}mdb
 olcDbDirectory: /var/openldap/data
 olcSuffix: {{ openldap_base }}
 olcRootDN: cn=admin,{{ openldap_base }}
-{% if openldap_password_hash is defined %}olcRootPW: {{ openldap_password_hash }}{% endif %}
-olcAccess: to attrs=userPassword
-           by anonymous auth
-           by self =xw
-           by users auth
+{% if openldap_password_hash is defined %}
+olcRootPW: {{ openldap_password_hash }}
+{% endif %}
+olcAccess: to attrs=userPassword by anonymous auth by self =xw by users auth
 olcAccess: to attrs=cn,gn,sn,givenName,telephoneNumber by anonymous auth by self write by users read
 olcAccess: to attrs=backupAddress,blockList,allowList by anonymous auth by self write by users auth
-olcAccess: to attrs=objectClass,entry by anonymous auth by users read
+olcAccess: to attrs=objectClass,entry,member by anonymous auth by users read
+olcAccess: to dn.subtree={{ openldap_base }} by users search
 olcAccess: to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage
-{% if openldap_trusted_readers is defined %}
-olcAccess: to * by {{ openldap_trusted_readers }} read
-{% endif %}
-olcDbIndex: mail eq
-olcDbIndex: mailUID eq,pres
-olcDbIndex: mailGID eq,pres
-olcDbIndex: aliasAddress eq,sub,pres
-olcDbIndex: domainName eq,sub,pres
-olcDbIndex: entryCSN eq
-olcDbIndex: entryUUID eq
-olcDbIndex: objectClass eq
+{% for db_index in openldap_db_index %}
+olcDbIndex: {{ db_index.attr }} {{ db_index.comp }}
+{% endfor %}
 
 {% for overlay in openldap_data_overlays %}
 
